@@ -1,14 +1,10 @@
 class PgAuditLog::Entry < ActiveRecord::Base
-  TABLE_NAME = "audit_log"
-  if ::ActiveRecord::VERSION::MAJOR == 3 && ::ActiveRecord::VERSION::MINOR >= 2
-    self.table_name = TABLE_NAME
-  else
-    set_table_name TABLE_NAME
-  end
+  TABLE_NAME = 'audit_log'.freeze
+  self.table_name = TABLE_NAME
 
   class CannotDeleteError < StandardError
     def message
-      "Audit Logs cannot be deleted!"
+      'Audit Logs cannot be deleted!'
     end
   end
 
@@ -90,5 +86,4 @@ class PgAuditLog::Entry < ActiveRecord::Base
       raise CannotDeleteError
     end
   end
-
 end

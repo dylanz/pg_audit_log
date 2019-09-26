@@ -1,0 +1,26 @@
+language: ruby
+sudo: false
+
+addons:
+  postgresql: '9.3'
+
+before_script:
+  - psql -c 'CREATE DATABASE pg_audit_log_test;' -U postgres
+
+rvm:
+  - "1.9"
+  - "2.0"
+  - "2.1"
+  - "2.2"
+  #- jruby-19mode
+  - rbx-2.2
+
+env:
+  - RAILS_VERSION="~> 4.2.0"
+  - RAILS_VERSION="~> 4.1.0"
+  - RAILS_VERSION="~> 4.0.0"
+  - RAILS_VERSION="~> 3.2.0"
+
+matrix:
+  allow_failures:
+    - env: RAILS_BRANCH="master"

@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require 'spec_helper'
 
 describe PgAuditLog::Function do
   describe ".installed?" do
@@ -7,14 +7,16 @@ describe PgAuditLog::Function do
       before do
         PgAuditLog::Function.uninstall
       end
-      it { should be_false }
+
+      it { is_expected.to be_falsey }
     end
 
     context "when it is" do
       before do
         PgAuditLog::Function.install
       end
-      it { should be_true }
+
+      it { is_expected.to be_truthy }
     end
   end
 
@@ -24,25 +26,27 @@ describe PgAuditLog::Function do
 
     context "new style" do
       it "escapes the email" do
-        subject.should_not match("SET")
+        expect(subject).not_to match('SET')
 
-        subject.should match("FUNCTION")
-        subject.should match("'o''connell@fred.com'::varchar")
+        expect(subject).to match('FUNCTION')
+        expect(subject).to match("'o''connell@fred.com'::varchar")
       end
     end
 
     context "old style" do
       before do
         Rails = double
-        Rails.stub_chain(:configuration, :pg_audit_log_old_style_user_id).and_return(true)
+        allow(Rails).to receive_message_chain(:configuration, :pg_audit_log_old_style_user_id).and_return(true)
       end
-      after { Object.send(:remove_const, :Rails) }
-      it "escapes the email" do
-        subject.should match("SET")
-        subject.should match("'o''connell@fred.com'")
 
-        subject.should_not match("FUNCTION")
-        subject.should_not match("'o''connell@fred.com'::varchar")
+      after { Object.send(:remove_const, :Rails) }
+
+      it "escapes the email" do
+        expect(subject).to match('SET')
+        expect(subject).to match("'o''connell@fred.com'")
+
+        expect(subject).not_to match('FUNCTION')
+        expect(subject).not_to match("'o''connell@fred.com'::varchar")
       end
     end
   end

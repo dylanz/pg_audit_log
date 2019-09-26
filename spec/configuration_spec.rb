@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require 'spec_helper'
 
 describe "the PostgreSQL database" do
   after do
@@ -6,7 +6,6 @@ describe "the PostgreSQL database" do
   end
 
   it "has an audit log table" do
-    ActiveRecord::Base.connection.table_exists?("audit_log").should be_true
+    expect(ActiveRecord::Base.connection.table_exists?('audit_log')).to be_truthy
   end
-
 end
