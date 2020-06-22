@@ -6,6 +6,6 @@ describe "the PostgreSQL database" do
   end
 
   it "has an audit log table" do
-    expect(ActiveRecord::Base.connection.table_exists?('audit_log')).to be_truthy
+    expect(ActiveRecord::Base.connection.data_source_exists?('audit_log')).to be_truthy
   end
 end

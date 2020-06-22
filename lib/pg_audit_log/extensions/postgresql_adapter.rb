@@ -1,38 +1,67 @@
 require 'active_record/connection_adapters/postgresql_adapter'
 
-# Did not want to reopen the class but sending an include seemingly is not working.
-class ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
-  def drop_table_with_auditing(table_name)
+module PGAuditExtensions
+  def drop_table(table_name)
     if PgAuditLog::Triggers.tables_with_triggers.include?(table_name)
       PgAuditLog::Triggers.drop_for_table(table_name)
     end
-    drop_table_without_auditing(table_name)
+    super(table_name)
   end
-  alias_method_chain :drop_table, :auditing
 
-  def create_table_with_auditing(table_name, options = {}, &block)
-    create_table_without_auditing(table_name, options, &block)
+  def create_table(table_name, options = {}, &block)
+    super(table_name, options, &block)
     unless options[:temporary] ||
-        PgAuditLog::IGNORED_TABLES.include?(table_name) ||
-        PgAuditLog::IGNORED_TABLES.any? { |table| table =~ table_name if table.is_a? Regexp } ||
-        PgAuditLog::Triggers.tables_with_triggers.include?(table_name)
+      PgAuditLog::IGNORED_TABLES.include?(table_name) ||
+      PgAuditLog::IGNORED_TABLES.any? { |table| table =~ table_name if table.is_a? Regexp } ||
+      PgAuditLog::Triggers.tables_with_triggers.include?(table_name)
       PgAuditLog::Triggers.create_for_table(table_name)
     end
   end
-  alias_method_chain :create_table, :auditing
 
-  def rename_table_with_auditing(table_name, new_name)
+  def rename_table(table_name, new_name)
     if PgAuditLog::Triggers.tables_with_triggers.include?(table_name)
       PgAuditLog::Triggers.drop_for_table(table_name)
     end
-    rename_table_without_auditing(table_name, new_name)
+    super(table_name, new_name)
     unless PgAuditLog::IGNORED_TABLES.include?(table_name) ||
-        PgAuditLog::IGNORED_TABLES.any? { |table| table =~ table_name if table.is_a? Regexp } ||
-        PgAuditLog::Triggers.tables_with_triggers.include?(new_name)
+      PgAuditLog::IGNORED_TABLES.any? { |table| table =~ table_name if table.is_a? Regexp } ||
+      PgAuditLog::Triggers.tables_with_triggers.include?(new_name)
       PgAuditLog::Triggers.create_for_table(new_name)
     end
   end
-  alias_method_chain :rename_table, :auditing
+
+  def reconnect!
+    super
+    @last_user_id = @last_unique_name = nil
+  end
+
+  def execute(sql, name = nil)
+    set_audit_user_id_and_name
+    super(sql, name = nil)
+  end
+
+  def exec_query(*args, &block)
+    set_audit_user_id_and_name
+    super(*args, &block)
+  end
+
+  def exec_update(*args, &block)
+    set_audit_user_id_and_name
+    super(*args, &block)
+  end
+
+  def exec_delete(*args, &block)
+    set_audit_user_id_and_name
+    super(*args, &block)
+  end
+
+end
+
+# Did not want to reopen the class but sending an include seemingly is not working.
+class ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
+
+  alias_method :execute_without_pg_audit_log, :execute
+  alias_method :exec_query_without_pg_audit_log, :exec_query
 
   def set_audit_user_id_and_name
     user_id, unique_name = user_id_and_name
@@ -55,46 +84,14 @@ class ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
     true
   end
 
-  def reconnect_with_pg_audit_log!
-    reconnect_without_pg_audit_log!
-    @last_user_id = @last_unique_name = nil
-  end
-  alias_method_chain :reconnect!, :pg_audit_log
-
-  def execute_with_pg_audit_log(sql, name = nil)
-    set_audit_user_id_and_name
-    conn = execute_without_pg_audit_log(sql, name = nil)
-    conn
-  end
-  alias_method_chain :execute, :pg_audit_log
-
-  def exec_query_with_pg_audit_log(*args, &block)
-    set_audit_user_id_and_name
-    conn = exec_query_without_pg_audit_log(*args, &block)
-    conn
-  end
-  alias_method_chain :exec_query, :pg_audit_log
-
-  def exec_update_with_pg_audit_log(*args, &block)
-    set_audit_user_id_and_name
-    conn = exec_update_without_pg_audit_log(*args, &block)
-    conn
-  end
-  alias_method_chain :exec_update, :pg_audit_log
-
-  def exec_delete_with_pg_audit_log(*args, &block)
-    set_audit_user_id_and_name
-    conn = exec_delete_without_pg_audit_log(*args, &block)
-    conn
-  end
-  alias_method_chain :exec_delete, :pg_audit_log
-
   private
 
   def user_id_and_name
     current_user = Thread.current[:current_user]
     user_id = current_user.try(:id) || "-1"
     user_unique_name = current_user.try(:unique_name) || "UNKNOWN"
-    return [user_id, user_unique_name]
+    [user_id, user_unique_name]
   end
 end
+
+ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.prepend(PGAuditExtensions)
