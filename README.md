@@ -1,6 +1,6 @@
 # pg_audit_log
 
-NOTE: this repo is a fork of https://github.com/dylanz/pg_audit_log. The original Gem was on Github at casecommons/pg_audit_log, but it has since been taken down. This fork has been maintained only to the extent that it has been updated to be compatible with Rails <5.2.
+NOTE: this repo is a fork of https://github.com/dylanz/pg_audit_log. The original Gem was on Github at casecommons/pg_audit_log, but it has since been taken down. This fork has been maintained only to the extent that it has been updated to be compatible with Rails <5.3.
 
 ## Description
 
@@ -51,7 +51,7 @@ On a 2.93GHz i7 with PostgreSQL 9.1 the audit log has an overhead of about 0.003
 
 - ActiveRecord
 - PostgreSQL
-- Rails 3.2, 4.x, <5.2
+- Rails 3.2, 4.x, <5.3
 
 ## LICENSE
 
