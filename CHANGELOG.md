@@ -1,3 +1,8 @@
+### 0.7.0
+
+- Support Rails 5.2 (no code change, dependency requirement bump only).
+
+
 ### 0.6.7
 - Fix nested calls to 'without_triggers'.
 
@@ -12,8 +17,3 @@
 - Introduce changelog.
 - Support Rails 4.2 (no code change, dependency requirement bump only).
 - Update Rails generator for Rails 4.x (Daniel Grippi).
-
-
-### 0.7.0
-
-- Support Rails 5.2 (no code change, dependency requirement bump only).
