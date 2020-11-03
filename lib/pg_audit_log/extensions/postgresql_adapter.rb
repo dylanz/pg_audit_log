@@ -54,16 +54,17 @@ module PGAuditExtensions
     set_audit_user_id_and_name
     super(*args, &block)
   end
-
 end
 
 # Did not want to reopen the class but sending an include seemingly is not working.
 class ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
-
   alias_method :execute_without_pg_audit_log, :execute
   alias_method :exec_query_without_pg_audit_log, :exec_query
 
   def set_audit_user_id_and_name
+    # If query is made to a replica, then we can't make any write requests, so we should skip
+    return true if replica?
+
     user_id, unique_name = user_id_and_name
     return true if (@last_user_id && @last_user_id == user_id) && (@last_unique_name && @last_unique_name == unique_name)
 
