@@ -104,7 +104,7 @@ class ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
   private
 
   def user_id_and_name
-    current_user     = Thread.current[:current_user]
+    current_user     = Thread.current[:current_user] || RequestStore[:current_user]
     user_id          = current_user.try(:id) || "-1"
     user_unique_name = current_user.try(:unique_name) || "UNKNOWN"
     [user_id, user_unique_name]
