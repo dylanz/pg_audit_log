@@ -3,7 +3,7 @@ require 'active_record/connection_adapters/postgresql_adapter'
 # Did not want to reopen the class but sending an include seemingly is not working.
 class ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
   def create_table_with_auditing(table_name, options = {}, &block)
-    create_table_without_auditing(table_name, options, &block)
+    create_table_without_auditing(table_name, **options, &block)
     unless options[:temporary] ||
       PgAuditLog::IGNORED_TABLES.include?(table_name) ||
       PgAuditLog::IGNORED_TABLES.any? { |table| table =~ table_name if table.is_a? Regexp } ||
