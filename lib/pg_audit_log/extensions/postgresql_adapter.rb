@@ -65,8 +65,8 @@ class ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
   alias_method :exec_update_without_pg_audit_log, :exec_update
   alias_method :exec_update, :exec_update_with_pg_audit_log
 
-  def reconnect_with_pg_audit_log!
-    reconnect_without_pg_audit_log!
+  def reconnect_with_pg_audit_log!(*args, **opts)
+    reconnect_without_pg_audit_log!(*args, **opts)
     @last_user_id = @last_unique_name = nil
   end
 
