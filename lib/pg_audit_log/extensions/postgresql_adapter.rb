@@ -25,11 +25,11 @@ class ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
   alias_method :drop_table_without_auditing, :drop_table
   alias_method :drop_table, :drop_table_with_auditing
 
-  def rename_table_with_auditing(table_name, new_name)
+  def rename_table_with_auditing(table_name, new_name, **options)
     if PgAuditLog::Triggers.tables_with_triggers.include?(table_name)
       PgAuditLog::Triggers.drop_for_table(table_name)
     end
-    rename_table_without_auditing(table_name, new_name)
+    rename_table_without_auditing(table_name, new_name, **options)
     unless PgAuditLog::IGNORED_TABLES.include?(table_name) ||
       PgAuditLog::IGNORED_TABLES.any? { |table| table =~ table_name if table.is_a? Regexp } ||
       PgAuditLog::Triggers.tables_with_triggers.include?(new_name)
